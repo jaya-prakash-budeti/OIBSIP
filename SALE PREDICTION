@@ -1,0 +1,107 @@
+import numpy as np
+import pandas as pd     ##importing libraries
+import matplotlib.pyplot as plt
+
+data=pd.read_csv("C:/Users/JAY CHOWDARY/Desktop/oasis internship/Advertising.csv")  ##importing datasets
+
+data.head()
+
+data.info()
+
+data=data.iloc[:,1:5] ##removing the unwanted columns 
+
+data.head()
+
+data.info() ##the data we containing is numerical data 
+
+data.describe()
+
+data.isnull().sum()
+
+import seaborn as sns
+sns.boxplot(data['TV']) ##checking of outliers 
+
+sns.boxplot(data['Radio'])
+
+sns.boxplot(data['Newspaper'])
+
+q1=data['Newspaper'].quantile(0.25)
+q3=data['Newspaper'].quantile(0.75)
+iqr=q3-q1
+lower_bond=q1-1.5*iqr+q3
+upper_bond=1.5*iqr+q3
+def Imputation(values):
+    if values > lower_bond:
+        return upper_bond
+    elif values < lower_bond:
+        return lower_bond
+    else:
+        return values
+
+data['Newspaper']=data['Newspaper'].apply(Imputation)
+
+sns.boxplot(data['Newspaper'])
+
+##removed outliers
+##feature selection 
+data.corr()
+
+#here i am using random forest to check future sales prediction 
+from sklearn.ensemble import RandomForestRegressor
+
+model=RandomForestRegressor(n_estimators=100,random_state=42)
+
+x=data.iloc[:,0:3]
+
+x
+
+y=data['Sales']
+
+from sklearn.datasets import make_regression
+
+x,y=make_regression(n_features=4,n_informative=2,random_state=0,shuffle=False)
+
+cls=RandomForestRegressor(max_depth=2,random_state=0)  ##building the random forest model 
+
+cls.fit(x,y)
+
+y_pred=cls.predict(x) ##prediction with test data 
+
+from sklearn.metrics import r2_score ##finding r-square value
+
+score=r2_score(y,y_pred)
+
+score=round(score,2)*100
+
+print(score) ##r-square value is 84%
+
+##multiple regression 
+from sklearn.model_selection import train_test_split
+
+x_train,x_test,y_train,y_test=train_test_split(x,y,random_state=42,test_size=0.2) ##dividing the data into training and testing data
+
+from sklearn.linear_model import LinearRegression ##importing the linear regression 
+
+model=LinearRegression()
+
+model.fit(x_train,y_train) ##fitting the training data
+
+y_pred=model.predict(x_test) ##prediction using model
+
+score=r2_score(y_test,y_pred)
+
+score=score*100
+
+print(score) ##score=100
+
+print(y_pred,y_test)  ##printing the predicted values vs actual values 
+
+plt.figure(figsize=(12,6))
+plt.subplot(1,2,1)
+plt.plot(y_test,color="green")
+plt.title("actual values")   ##plotting the values 
+
+plt.subplot(1,2,2)
+plt.plot(y_test,color="red")
+plt.title("Predicted values")
+
